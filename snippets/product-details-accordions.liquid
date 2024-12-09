@@ -1,0 +1,169 @@
+<div class="space-y-6">
+
+    <!-- Product Features Section -->
+    <div class="product-details-section bg-white border rounded-lg shadow-sm p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Product Details</h2>
+        <ul class="features-list space-y-4">
+            <li class="flex items-center gap-4">
+                <img src="{{ 'icon-certification.svg' | asset_url }}" alt="Certification Icon" class="w-6 h-6" width="24px" height="24px">
+                <span class="text-black font-extrabold">ASSE & CSA Certified</span>
+            </li>
+            <li class="flex items-center gap-4">
+                <img src="{{ 'icon-warranty.svg' | asset_url }}" alt="Warranty Icon" class="w-6 h-6" width="24px" height="24px">
+                <span class="text-black font-extrabold">Limited Lifetime Warranty</span>
+            </li>
+            <li class="flex items-center gap-4">
+                <img src="{{ 'icon-shipping.svg' | asset_url }}" alt="Shipping Icon" class="w-6 h-6" width="24px" height="24px">
+                <span class="text-black font-extrabold">Free Shipping in US over $200</span>
+            </li>
+            <li class="flex items-center gap-4">
+                <img src="{{ 'icon-delivery.svg' | asset_url }}" alt="Delivery Icon" class="w-6 h-6" width="24px" height="24px">
+                <span class="text-black font-extrabold">Est. Delivery in 3-10 Business Days</span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- What's Included Accordion Section -->
+    <div class="ctm_multifaq_title_main px-5 lg:px-8 desktop:px-15 py-10">
+        <div class="ctm_multifaq_title_inner">
+            <div class="faq_main_container">
+                <!-- FAQ Section: What's Included -->
+                <div class="faq_container">
+                    <div class="faq_question flex items-center justify-between border-b-2 border-light_black py-4">
+                        <h2 class="font-normal text-lg md:text-xl flex-1">
+                            What's Included
+                        </h2>
+                        <div class="icon flex items-center justify-center w-10 h-10">
+                            <div class="icon-shape transition-transform duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path class="vertical-line" d="M20.4853 12.0009H3.51472" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                    <path d="M12 3.51562V20.4862" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answercont max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        {% if product.metafields.custom.what_s_included %}
+                        {% assign product_type = product.metafields.custom.what_s_included.value %}
+                        <ul>
+                            {% for material_type in product_type.material_type.value %}
+                                <li>{{ material_type }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+    
+                <!-- Repeat for other FAQ sections -->
+                <div class="faq_container">
+                    <div class="faq_question flex items-center justify-between border-b-2 border-light_black py-4">
+                        <h2 class="font-normal text-lg md:text-xl flex-1">
+                            Installation Instructions
+                        </h2>
+                        <div class="icon flex items-center justify-center w-10 h-10">
+                            <div class="icon-shape transition-transform duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path class="vertical-line" d="M20.4853 12.0009H3.51472" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                    <path d="M12 3.51562V20.4862" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answercont max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        {% if product.metafields.custom.what_s_included %}
+                            {% assign product_type = product.metafields.custom.what_s_included.value %}
+                            <ul>
+                                {% for installation_instruction in product_type.installation_instructions.value %}
+                                    <li>
+                                        <a href="{{ installation_instruction }}" class="text-blue-600 hover:text-blue-500 underline">
+                                            installation_instruction
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Example for Tech Specs -->
+                <div class="faq_container">
+                    <div class="faq_question flex items-center justify-between border-b-2 border-light_black py-4">
+                        <h2 class="font-normal text-lg md:text-xl flex-1">
+                            Tech Specs
+                        </h2>
+                        <div class="icon flex items-center justify-center w-10 h-10">
+                            <div class="icon-shape transition-transform duration-300 ease-in-out">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path class="vertical-line" d="M20.4853 12.0009H3.51472" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                    <path d="M12 3.51562V20.4862" stroke="#0F0F11" stroke-width="2.33" stroke-linecap="square" stroke-linejoin="square"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answercont max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="answer p-5">
+                            {{ product.tech_specs }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+</div>
+<style>
+    .faq_question.active .icon-shape.active svg path.vertical-line {
+        display: none;
+      }
+      .faq_question.active .icon-shape.active svg path {
+       stroke: #0F0F11;
+      }
+   .faq_question.active .icon-shape.active svg {
+          transform: rotate(-90deg);
+          color:#FF5D5D;
+      }
+</style>
+<script>
+    document.querySelectorAll(".ctm_multifaq_title_main").forEach((section) => {
+        let questions = section.querySelectorAll(".faq_question");
+        let previousActiveQuestion = null;
+      
+        questions.forEach((question) => {
+            let icon = question.querySelector(".icon-shape");
+      
+            question.addEventListener("click", (event) => {
+                if (previousActiveQuestion && previousActiveQuestion !== question) {
+                    previousActiveQuestion.classList.remove("active");
+                    previousActiveQuestion.querySelector(".icon-shape").classList.remove("active");
+                    previousActiveQuestion.nextElementSibling.style.maxHeight = 0;
+                }
+      
+                question.classList.toggle("active");
+                icon.classList.toggle("active");
+      
+                const answer = question.nextElementSibling;
+      
+                if (question.classList.contains("active")) {
+                    answer.style.maxHeight = answer.scrollHeight + "px";
+                    previousActiveQuestion = question;  // Update the previously active question
+                } else {
+                    answer.style.maxHeight = 0;
+                    previousActiveQuestion = null;  // No question is active now
+                }
+            });
+      
+            // Check if the question has the "open" class and add the "active" class accordingly
+            if (question.classList.contains("open")) {
+                question.classList.add("active");
+                icon.classList.add("active");
+                const answer = question.nextElementSibling;
+                answer.style.maxHeight = answer.scrollHeight + "px";
+                previousActiveQuestion = question;  // Set the initially active question
+            }
+        });
+      });
+</script>
+
