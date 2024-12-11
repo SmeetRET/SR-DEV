@@ -1,0 +1,61 @@
+{{ 'product-accordion.css' | asset_url | stylesheet_tag }}
+<div class="product-accordion">
+    <div class="tabs">
+        {% for product_tab in product.metafields.custom.product_details.value %}
+            <button class="tabs-button" onclick="showTab({{ forloop.index }})">{{ product_tab.heading_title }}</button>
+        {% endfor %}
+    </div>
+    <div class="product-accordion-container">
+        {% for product_tab in product.metafields.custom.product_details.value %}
+            <div class="tab-content {% if forloop.index != 1 %}hidden{% endif %}" id="tab-{{ forloop.index }}">
+                <div class="faq-container">
+                    {% if product_tab.faq_content != blank %}
+                        {% for faq_entry in product_tab.faq_content.value %}
+                            <div class="faq-item">
+                                <div class="faq-container-item" onclick="toggleDropdown(this)">
+                                    <span class="faq-container-item-question">{{ faq_entry.question }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="faq-container-item-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </div>
+                                <div class="faq-container-item-answer hidden">
+                                    {{ faq_entry.answer }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="fallback-content">
+                            {{ product_tab.content }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+    function showTab(tabIndex) {
+        // Hide all tab content
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden'); // Add the 'hidden' class to hide all tabs
+        });
+    
+        // Show the selected tab
+        const selectedTab = document.getElementById('tab-' + tabIndex);
+        if (selectedTab) {
+            selectedTab.classList.remove('hidden'); // Remove the 'hidden' class for the selected tab
+        } else {
+            console.error(`Tab with ID 'tab-${tabIndex}' not found.`);
+        }
+    }
+    
+    function toggleDropdown(element) {
+        // Toggle visibility of the dropdown content
+        const dropdown = element.nextElementSibling;
+        if (dropdown) {
+            dropdown.classList.toggle('hidden'); // Toggle the 'hidden' class
+        } else {
+            console.error("Dropdown content not found.");
+        }
+    }
+</script>
