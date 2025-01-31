@@ -126,28 +126,6 @@
     "show_cart_note": false,
     "cart_drawer_collection": "",
     "cart_color_scheme": "scheme-1",
-    "sections": {
-      "main-password-header": {
-        "type": "main-password-header",
-        "settings": {
-          "color_scheme": "scheme-1"
-        }
-      },
-      "main-password-footer": {
-        "type": "main-password-footer",
-        "settings": {
-          "color_scheme": "scheme-1"
-        }
-      }
-    },
-    "content_for_index": [],
-    "blocks": {
-      "17368511000352060744": {
-        "type": "shopify://apps/goaffpro-affiliate-marketing/blocks/goaffpro-embedded-pixel/2f4d802b-86c2-47e4-8096-ae1aa3efbab2",
-        "disabled": true,
-        "settings": {}
-      }
-    },
     "color_schemes": {
       "scheme-1": {
         "settings": {
@@ -204,7 +182,22 @@
           "shadow": "#121212"
         }
       }
-    }
+    },
+    "sections": {
+      "main-password-header": {
+        "type": "main-password-header",
+        "settings": {
+          "color_scheme": "scheme-1"
+        }
+      },
+      "main-password-footer": {
+        "type": "main-password-footer",
+        "settings": {
+          "color_scheme": "scheme-1"
+        }
+      }
+    },
+    "content_for_index": []
   },
   "presets": {
     "Default": {
