@@ -372,5 +372,250 @@
     {%- if settings.cart_type == 'drawer' -%}
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
+        <script>
+    (function () {
+      'use strict';
+
+      const UTM_KEY = 'utm_source_saved';
+      const TARGET_VALUE = 'xsolla';
+
+      function captureUTM() {
+        let utmCaptured = false;
+
+        const params = new URLSearchParams(window.location.search);
+        const utmFromUrl = params.get('utm_source');
+
+        if (utmFromUrl) {
+          localStorage.setItem(UTM_KEY, utmFromUrl);
+          utmCaptured = true;
+        }
+
+        if (!utmCaptured && document.referrer) {
+          try {
+            const referrerUrl = new URL(document.referrer);
+            const utmFromReferrer = referrerUrl.searchParams.get('utm_source');
+            if (utmFromReferrer) {
+              localStorage.setItem(UTM_KEY, utmFromReferrer);
+              utmCaptured = true;
+            }
+          } catch (e) {}
+        }
+
+        if (!utmCaptured && document.referrer && document.referrer.includes('x.la')) {
+          localStorage.setItem(UTM_KEY, TARGET_VALUE);
+          utmCaptured = true;
+        }
+
+        if (!utmCaptured && window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const utmFromHash = hashParams.get('utm_source');
+          if (utmFromHash) {
+            localStorage.setItem(UTM_KEY, utmFromHash);
+            utmCaptured = true;
+          }
+        }
+      }
+
+      function forceUpdateCart() {
+        const savedUtm = localStorage.getItem(UTM_KEY);
+        if (!savedUtm || savedUtm !== TARGET_VALUE) return;
+
+        fetch('/cart.js')
+          .then(r => r.json())
+          .then(cart => {
+            const existingAttributes = cart.attributes || {};
+            const mergedAttributes = {
+              ...existingAttributes,
+              utm_source: savedUtm,
+              _utm_timestamp: new Date().toISOString()
+            };
+
+            return fetch('/cart/update.js', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              },
+              body: JSON.stringify({ attributes: mergedAttributes })
+            });
+          })
+          .then(r => r.ok ? r.json() : null)
+          .catch(() => {});
+      }
+
+      function protectUTMAttribute() {
+        const savedUtm = localStorage.getItem(UTM_KEY);
+        if (savedUtm !== TARGET_VALUE) return;
+
+        setInterval(function () {
+          fetch('/cart.js')
+            .then(r => r.json())
+            .then(cart => {
+              if (
+                cart.item_count > 0 &&
+                (!cart.attributes || cart.attributes.utm_source !== savedUtm)
+              ) {
+                forceUpdateCart();
+              }
+            })
+            .catch(() => {});
+        }, 5000);
+      }
+
+      const originalFetch = window.fetch;
+      window.fetch = function (...args) {
+        const url = args[0];
+
+        if (typeof url === 'string' && url.includes('/cart/add')) {
+          return originalFetch.apply(this, args).then(response => {
+            if (response.ok) {
+              setTimeout(forceUpdateCart, 1000);
+            }
+            return response.clone();
+          });
+        }
+
+        if (typeof url === 'string' && url.includes('/cart/update.js')) {
+          const savedUtm = localStorage.getItem(UTM_KEY);
+          if (savedUtm === TARGET_VALUE) {
+            const options = args[1] || {};
+            if (options.body) {
+              try {
+                const body = JSON.parse(options.body);
+                if (body.attributes) {
+                  body.attributes.utm_source = savedUtm;
+                  body.attributes._utm_timestamp = new Date().toISOString();
+                  args[1] = {
+                    ...options,
+                    body: JSON.stringify(body)
+                  };
+                }
+              } catch (e) {}
+            }
+          }
+        }
+
+        return originalFetch.apply(this, args);
+      };
+
+      const originalOpen = XMLHttpRequest.prototype.open;
+      const originalSend = XMLHttpRequest.prototype.send;
+
+      XMLHttpRequest.prototype.open = function (method, url) {
+        this._url = url;
+        return originalOpen.apply(this, arguments);
+      };
+
+      XMLHttpRequest.prototype.send = function (body) {
+        if (this._url && this._url.includes('/cart/update.js')) {
+          const savedUtm = localStorage.getItem(UTM_KEY);
+          if (savedUtm === TARGET_VALUE && body) {
+            try {
+              const data = JSON.parse(body);
+              if (data.attributes) {
+                data.attributes.utm_source = savedUtm;
+                data.attributes._utm_timestamp = new Date().toISOString();
+                body = JSON.stringify(data);
+              }
+            } catch (e) {}
+          }
+        }
+
+        if (this._url && this._url.includes('/cart/add')) {
+          this.addEventListener('load', () => {
+            if (this.status >= 200 && this.status < 300) {
+              setTimeout(forceUpdateCart, 1000);
+            }
+          });
+        }
+
+        return originalSend.call(this, body);
+      };
+
+      document.addEventListener(
+        'submit',
+        function (e) {
+          const form = e.target;
+          const action = form.getAttribute('action');
+          if (action && action.includes('/cart/add')) {
+            setTimeout(forceUpdateCart, 1500);
+          }
+        },
+        true
+      );
+
+      document.addEventListener(
+        'click',
+        function (e) {
+          const button = e.target.closest(
+            'button[name="add"], .btn--add-to-cart, [data-add-to-cart], .product-form__submit'
+          );
+          if (button) {
+            setTimeout(forceUpdateCart, 1200);
+          }
+        },
+        true
+      );
+
+      let lastCartToken = null;
+
+      function startPolling() {
+        setInterval(function () {
+          fetch('/cart.js')
+            .then(r => r.json())
+            .then(cart => {
+              if (cart.item_count > 0 && cart.token !== lastCartToken) {
+                lastCartToken = cart.token;
+                forceUpdateCart();
+              }
+            })
+            .catch(() => {});
+        }, 3000);
+      }
+
+      function checkExistingCart() {
+        fetch('/cart.js')
+          .then(r => r.json())
+          .then(cart => {
+            lastCartToken = cart.token;
+            if (cart.item_count > 0) {
+              forceUpdateCart();
+            }
+          })
+          .catch(() => {});
+      }
+
+      function listenShopifyEvents() {
+        ['cart:updated', 'cart.requestComplete', 'ajaxCart.afterCartLoad'].forEach(
+          eventName => {
+            document.addEventListener(eventName, () => {
+              setTimeout(forceUpdateCart, 800);
+            });
+          }
+        );
+      }
+
+      function init() {
+        captureUTM();
+        const savedUtm = localStorage.getItem(UTM_KEY);
+        if (savedUtm === TARGET_VALUE) {
+          checkExistingCart();
+          listenShopifyEvents();
+          startPolling();
+          protectUTMAttribute();
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+      window.addEventListener('load', function () {
+        setTimeout(checkExistingCart, 1500);
+      });
+    })();
+    </script>
   </body>
 </html>
