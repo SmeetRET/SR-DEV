@@ -142,9 +142,9 @@
     },
     "content_for_index": [],
     "blocks": {
-      "5460033060862993441": {
-        "type": "shopify://apps/essential-announcer/blocks/app-embed/93b5429f-c8d6-4c33-ae14-250fd84f361b",
-        "disabled": true,
+      "7607994013135356531": {
+        "type": "shopify://apps/annify-announcement-bar/blocks/app-embed/b7f3deb1-f754-4527-8fe4-1ecb66093650",
+        "disabled": false,
         "settings": {}
       }
     },
