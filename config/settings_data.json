@@ -146,6 +146,11 @@
         "type": "shopify://apps/annify-announcement-bar/blocks/app-embed/b7f3deb1-f754-4527-8fe4-1ecb66093650",
         "disabled": false,
         "settings": {}
+      },
+      "8552734807663135353": {
+        "type": "shopify://apps/preproduct-next-gen-pre-order/blocks/preproduct_app_embed_block/2762c018-a41c-4de1-8397-e1a2010a74fa",
+        "disabled": false,
+        "settings": {}
       }
     },
     "color_schemes": {
