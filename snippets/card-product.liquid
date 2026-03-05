@@ -623,13 +623,15 @@
   </div>
 {%- endif -%}
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
 
 fetch('/browsing_context_suggestions.json')
 .then(res => res.json())
 .then(data => {
 
-const userState = data.detected_values?.subdivision?.code;
+const userState = data.detected_values?.subdivision?.handle || null;
+
+if(!userState) return;
 
 document.querySelectorAll('.product-card-wrapper').forEach(card => {
 
