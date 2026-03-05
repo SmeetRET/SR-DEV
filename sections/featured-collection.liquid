@@ -196,7 +196,33 @@
     {%- endif -%}
   </div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
 
+fetch('/browsing_context_suggestions.json')
+.then(res => res.json())
+.then(data => {
+
+const userState = data.detected_values?.subdivision?.code;
+
+document.querySelectorAll('.product-card-wrapper').forEach(card => {
+
+const restricted = card.querySelector('.restricted-states');
+
+if(!restricted) return;
+
+const states = restricted.dataset.states.split(',');
+
+if(states.includes(userState)){
+card.style.display = "none";
+}
+
+});
+
+});
+
+});
+</script>
 {% schema %}
 {
   "name": "t:sections.featured-collection.name",
