@@ -40,7 +40,7 @@
       assign ratio = 1
     endif
   -%}
-  <div class="card-wrapper product-card-wrapper underline-links-hover">
+  <div class="card-wrapper product-card-wrapper underline-links-hover" data-restricted-states="{% for state in card_product.metafields.custom.restricted_states.value %}{{ state.state_code }}{% unless forloop.last %},{% endunless %}{% endfor %}">
     <div
       class="
         card card--{{ settings.card_style }}
