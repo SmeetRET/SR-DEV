@@ -622,3 +622,30 @@
     </div>
   </div>
 {%- endif -%}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+fetch('/browsing_context_suggestions.json')
+.then(res => res.json())
+.then(data => {
+
+const userState = data.detected_values?.subdivision?.code;
+
+document.querySelectorAll('.product-card-wrapper').forEach(card => {
+
+const restricted = card.dataset.restrictedStates;
+
+if(!restricted) return;
+
+const states = restricted.split(',');
+
+if(states.includes(userState)){
+card.style.display = "none";
+}
+
+});
+
+});
+
+});
+</script>
