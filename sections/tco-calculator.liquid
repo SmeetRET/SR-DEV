@@ -1,0 +1,1063 @@
+{% comment %}
+ TCO & ROI Calculator — Shopify Section
+ Styled to match TWT Audio brand (twtaudio.com)
+ Flow: Fill inputs → Click Calculate → Klaviyo form modal → Results on page
+ - Klaviyo Form ID set in Theme Editor → section settings
+ - TWW-50 / TWW-55 = 1-year warranty; all others = 2 years
+ - Products pulled from Shopify catalog via product_list picker
+{% endcomment %}
+
+<style>
+ /* ── Reset ── */
+ .tco-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
+
+ /* ── Page wrapper ── */
+ .tco-wrap {
+ font-family: var(--font-body-family, 'Helvetica Neue', Arial, sans-serif);
+ background: #f7f8fa;
+ color: #1c2b3a;
+ padding: 56px 20px 72px;
+ }
+ .tco-inner { max-width: 1100px; margin: 0 auto; }
+
+ /* ── Section heading ── */
+ .tco-heading-block {
+ text-align: center;
+ margin-bottom: 40px;
+ }
+ .tco-eyebrow {
+ display: inline-block;
+ font-size: 11px; font-weight: 700;
+ letter-spacing: 0.14em; text-transform: uppercase;
+ color: #c8102e;
+ margin-bottom: 10px;
+ }
+ .tco-heading-block h2 {
+ font-size: clamp(22px, 3vw, 34px);
+ font-weight: 800;
+ color: #1c2b3a;
+ line-height: 1.2;
+ letter-spacing: -0.3px;
+ margin-bottom: 10px;
+ }
+ .tco-heading-block p {
+ font-size: 15px;
+ color: #5a6a78;
+ max-width: 560px;
+ margin: 0 auto;
+ line-height: 1.6;
+ }
+
+ /* ── Two-column grid ── */
+ .tco-grid {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 20px;
+ margin-bottom: 24px;
+ }
+
+ /* ── Cards ── */
+ .tco-col {
+ background: #ffffff;
+ border: 1px solid #e2e6ea;
+ border-radius: 12px;
+ overflow: hidden;
+ box-shadow: 0 2px 12px rgba(28,43,58,.06);
+ }
+
+ .tco-col-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 14px 22px;
+ border-bottom: 1px solid #e2e6ea;
+ }
+ .tco-col-header--comp { background: #fef2f2; border-left: 4px solid #c8102e; }
+ .tco-col-header--twt { background: #eef4fb; border-left: 4px solid #1c4f82; }
+
+ .tco-col-title { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+ .tco-col-title--comp { color: #c8102e; }
+ .tco-col-title--twt { color: #1c4f82; }
+
+ .tco-msrp-tag {
+ font-size: 12px; color: #5a6a78;
+ background: #fff; border: 1px solid #d0d8e0;
+ border-radius: 20px; padding: 3px 10px;
+ }
+ .tco-msrp-tag strong { color: #1c2b3a; font-weight: 700; }
+
+ .tco-col-body { padding: 22px; }
+
+ /* ── Model selector row ── */
+ .tco-model-row { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+ .tco-model-row-left { flex: 1; }
+
+ .tco-model-img {
+ width: 100px; height: 80px;
+ background: #f7f8fa;
+ border: 1px solid #e2e6ea;
+ border-radius: 8px;
+ overflow: hidden; flex-shrink: 0;
+ display: flex; align-items: center; justify-content: center;
+ }
+ .tco-model-img img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+ .tco-img-placeholder { font-size: 10px; color: #aab4be; text-align: center; }
+
+ .tco-warranty-tag {
+ display: inline-flex; gap: 10px; align-items: center;
+ margin-top: 8px; padding: 5px 10px;
+ background: #eef4fb; border: 1px solid #c8d8ed;
+ border-radius: 6px; font-size: 11px; color: #5a6a78;
+ }
+ .tco-warranty-tag strong { color: #1c4f82; font-weight: 700; }
+ .tco-warranty-tag .sep { color: #c8d8ed; }
+
+ /* ── Form fields ── */
+ .tco-field { margin-bottom: 13px; }
+ .tco-label {
+ display: block;
+ font-size: 11px; font-weight: 700;
+ text-transform: uppercase; letter-spacing: 0.06em;
+ color: #7a8a98; margin-bottom: 5px;
+ }
+ .tco-input {
+ width: 100%; padding: 9px 13px;
+ border-radius: 7px; border: 1.5px solid #d8e0e8;
+ background: #fff; color: #1c2b3a;
+ font-size: 14px; font-family: inherit;
+ transition: border-color .18s, box-shadow .18s;
+ -webkit-appearance: none;
+ }
+ .tco-input:focus { outline: none; border-color: #1c4f82; box-shadow: 0 0 0 3px rgba(28,79,130,.1); }
+ .tco-input--readonly { background: #f7f8fa; color: #9aaab8; cursor: not-allowed; border-style: dashed; }
+ .tco-input--highlight {
+ background: #e8f7ee !important;
+ color: #1a6b3a !important;
+ border-color: #2ea85a !important;
+ font-weight: 700;
+ }
+ .tco-input--highlight:focus { box-shadow: 0 0 0 3px rgba(46,168,90,.12); }
+ .tco-note { font-size: 10px; color: #aab4be; margin-top: 3px; }
+
+ .tco-select {
+ width: 100%; padding: 9px 13px;
+ border-radius: 7px; border: 1.5px solid #d8e0e8;
+ background: #fff; color: #1c2b3a;
+ font-size: 14px; font-family: inherit; cursor: pointer;
+ -webkit-appearance: none; appearance: none;
+ background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a6a78' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+ background-repeat: no-repeat;
+ background-position: right 13px center;
+ padding-right: 36px;
+ transition: border-color .18s;
+ }
+ .tco-select:focus { outline: none; border-color: #1c4f82; box-shadow: 0 0 0 3px rgba(28,79,130,.1); }
+
+ /* ── Calculate button ── */
+ .tco-calc-btn-wrap { text-align: center; margin-bottom: 28px; }
+ .tco-calc-btn {
+ display: inline-block;
+ background: #c8102e;
+ color: #fff; font-weight: 700;
+ border: none; padding: 15px 60px;
+ border-radius: 8px; font-size: 15px;
+ font-family: inherit; cursor: pointer;
+ letter-spacing: 0.2px;
+ transition: background .2s, transform .15s, box-shadow .2s;
+ box-shadow: 0 4px 16px rgba(200,16,46,.25);
+ }
+ .tco-calc-btn:hover {
+ background: #a80d26;
+ transform: translateY(-2px);
+ box-shadow: 0 8px 24px rgba(200,16,46,.35);
+ }
+
+ /* ── Modal ── */
+ .tco-modal-overlay {
+ display: none; position: fixed; inset: 0;
+ background: rgba(28,43,58,.55);
+ z-index: 9999;
+ align-items: center; justify-content: center;
+ backdrop-filter: blur(4px);
+ }
+ .tco-modal-overlay.active { display: flex; }
+
+ .tco-modal {
+ background: #fff;
+ border-radius: 14px;
+ padding: 36px 32px 28px;
+ width: 100%; max-width: 460px;
+ box-shadow: 0 24px 64px rgba(28,43,58,.18);
+ position: relative;
+ }
+ .tco-modal-accent { width: 100%; height: 4px; background: linear-gradient(90deg,#c8102e,#1c4f82); border-radius: 4px 4px 0 0; position: absolute; top: 0; left: 0; }
+
+ .tco-modal-close {
+ position: absolute; top: 14px; right: 16px;
+ background: none; border: none; color: #9aaab8;
+ font-size: 20px; cursor: pointer; line-height: 1; padding: 4px;
+ border-radius: 4px; transition: color .15s, background .15s;
+ }
+ .tco-modal-close:hover { color: #1c2b3a; background: #f0f2f4; }
+
+ .tco-modal-heading { font-size: 20px; font-weight: 800; color: #1c2b3a; margin-bottom: 5px; }
+ .tco-modal-sub { font-size: 13px; color: #7a8a98; line-height: 1.5; margin-bottom: 22px; }
+
+ /* Klaviyo form overrides — light theme */
+ #tco-klaviyo-form-wrap .klaviyo-form,
+ #tco-klaviyo-form-wrap [data-testid="form-component"] {
+ background: transparent !important;
+ padding: 0 !important;
+ box-shadow: none !important;
+ }
+ #tco-klaviyo-form-wrap input[type="text"],
+ #tco-klaviyo-form-wrap input[type="email"] {
+ background: #fff !important;
+ color: #1c2b3a !important;
+ border: 1.5px solid #d8e0e8 !important;
+ border-radius: 7px !important;
+ font-family: inherit !important;
+ font-size: 14px !important;
+ padding: 9px 13px !important;
+ }
+ #tco-klaviyo-form-wrap input:focus {
+ border-color: #1c4f82 !important;
+ box-shadow: 0 0 0 3px rgba(28,79,130,.1) !important;
+ outline: none !important;
+ }
+ #tco-klaviyo-form-wrap button[type="submit"] {
+ background: #c8102e !important;
+ color: #fff !important;
+ font-weight: 700 !important;
+ border-radius: 8px !important;
+ border: none !important;
+ font-family: inherit !important;
+ width: 100% !important;
+ padding: 13px !important;
+ font-size: 14px !important;
+ cursor: pointer !important;
+ transition: background .2s !important;
+ }
+ #tco-klaviyo-form-wrap button[type="submit"]:hover { background: #a80d26 !important; }
+
+ /* ── Results section ── */
+ .tco-results { display: none; }
+ .tco-results.active { display: block; animation: tco-rise .4s ease; }
+ @keyframes tco-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+ .tco-results-header {
+ text-align: center; margin-bottom: 20px;
+ }
+ .tco-results-header h3 { font-size: 20px; font-weight: 800; color: #1c2b3a; margin-bottom: 4px; }
+ .tco-results-header p { font-size: 13px; color: #7a8a98; }
+
+ .tco-results-grid {
+ display: grid;
+ grid-template-columns: repeat(4, 1fr);
+ gap: 14px;
+ margin-bottom: 20px;
+ }
+
+ .tco-result-card {
+ background: #fff;
+ border: 1px solid #e2e6ea;
+ border-radius: 10px;
+ padding: 20px 14px;
+ text-align: center;
+ box-shadow: 0 2px 10px rgba(28,43,58,.05);
+ }
+ .tco-result-label {
+ font-size: 10px; font-weight: 700;
+ color: #9aaab8; text-transform: uppercase;
+ letter-spacing: 0.08em; margin-bottom: 8px;
+ }
+ .tco-result-value {
+ font-size: 24px; font-weight: 800;
+ font-family: 'Courier New', monospace;
+ line-height: 1;
+ }
+ .tco-result-sub { font-size: 11px; color: #9aaab8; margin-top: 5px; }
+
+ .tco-result-card--comp { border-top: 3px solid #c8102e; }
+ .tco-result-card--comp .tco-result-value { color: #c8102e; }
+ .tco-result-card--twt { border-top: 3px solid #1c4f82; }
+ .tco-result-card--twt .tco-result-value { color: #1c4f82; }
+ .tco-result-card--save { border-top: 3px solid #2ea85a; }
+ .tco-result-card--save .tco-result-value { color: #2ea85a; }
+ .tco-result-card--roi { border-top: 3px solid #e07b00; }
+ .tco-result-card--roi .tco-result-value { color: #e07b00; }
+
+ /* ── Breakdown table ── */
+ .tco-breakdown {
+ background: #fff;
+ border: 1px solid #e2e6ea;
+ border-radius: 12px;
+ overflow: hidden;
+ box-shadow: 0 2px 10px rgba(28,43,58,.05);
+ margin-top: 4px;
+ }
+ .tco-breakdown-title {
+ padding: 14px 22px;
+ background: #f7f8fa;
+ border-bottom: 1px solid #e2e6ea;
+ font-size: 12px; font-weight: 800;
+ color: #5a6a78; text-transform: uppercase; letter-spacing: 0.08em;
+ }
+ .tco-breakdown table { width: 100%; border-collapse: collapse; font-size: 13px; }
+ .tco-breakdown th {
+ padding: 10px 18px; text-align: left;
+ font-size: 10px; font-weight: 700;
+ color: #9aaab8; text-transform: uppercase; letter-spacing: 0.07em;
+ background: #fafbfc; border-bottom: 1px solid #e2e6ea;
+ }
+ .tco-breakdown td { padding: 11px 18px; border-bottom: 1px solid #f0f2f4; color: #1c2b3a; }
+ .tco-breakdown tr:last-child td { border-bottom: none; }
+ .tco-breakdown tr:hover td { background: #fafbfc; }
+ .td-comp { color: #c8102e; font-weight: 600; font-family: 'Courier New', monospace; }
+ .td-twt { color: #1c4f82; font-weight: 600; font-family: 'Courier New', monospace; }
+ .td-save { color: #2ea85a; font-weight: 600; font-family: 'Courier New', monospace; }
+ .tco-breakdown tr.total-row td {
+ font-weight: 800; background: #f0f4f8;
+ border-top: 2px solid #e2e6ea;
+ }
+
+ /* ── Divider ── */
+ .tco-divider {
+ height: 1px; background: #e2e6ea;
+ margin: 28px 0;
+ }
+
+ @media (max-width: 768px) {
+ .tco-grid { grid-template-columns: 1fr; }
+ .tco-results-grid { grid-template-columns: 1fr 1fr; }
+ .tco-heading-block h2 { font-size: 22px; }
+ .tco-modal { padding: 28px 18px 22px; margin: 16px; }
+ }
+ @media (max-width: 480px) {
+ .tco-results-grid { grid-template-columns: 1fr 1fr; }
+ .tco-result-value { font-size: 18px; }
+ }
+</style>
+
+<div class="tco-wrap" id="tco-calculator">
+ <div class="tco-inner">
+
+ {%- comment -%} ── HEADING ── {%- endcomment -%}
+ <div class="tco-heading-block">
+ <span class="tco-eyebrow">Cost Comparison Tool</span>
+ <h2>{{ section.settings.title | default: '3-Year Total Cost of Ownership Calculator' }}</h2>
+ <p>{{ section.settings.subtitle | default: 'See how TWT Audio compares against your current product over a 3-year period. Enter your details below to calculate your savings.' }}</p>
+ </div>
+
+ {%- comment -%} ── INPUT GRID ── {%- endcomment -%}
+ <div class="tco-grid">
+
+ {%- comment -%} COMPETITOR COLUMN {%- endcomment -%}
+ <div class="tco-col">
+ <div class="tco-col-header tco-col-header--comp">
+ <span class="tco-col-title tco-col-title--comp">Competitor Product</span>
+ </div>
+ <div class="tco-col-body">
+ <div class="tco-field">
+ <label class="tco-label" for="comp-units">Number of Units</label>
+ <input class="tco-input" id="comp-units" type="number" min="0" step="1" value="5000">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-cpu">Cost Per Unit ($)</label>
+ <input class="tco-input" id="comp-cpu" type="number" min="0" step="0.01" value="18.75">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-lifespan">Expected Lifespan (Years)</label>
+ <input class="tco-input" id="comp-lifespan" type="number" min="0" step="0.1" value="3">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-warranty">Actual Warranty Term (Years)</label>
+ <input class="tco-input" id="comp-warranty" type="number" min="0" step="1" value="1">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-oow">Outside Warranty Replacements (Units/Year)</label>
+ <input class="tco-input" id="comp-oow" type="number" min="0" step="1" value="50">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-shipping">Shipping Cost (CONUS, Per Year $)</label>
+ <input class="tco-input" id="comp-shipping" type="number" min="0" step="0.01" value="35">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-sanitize">Cost to Sanitize / Clean (Per Year $)</label>
+ <input class="tco-input" id="comp-sanitize" type="number" min="0" step="0.01" value="10">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="comp-lost">Lost or Stolen Units (Per Year)</label>
+ <input class="tco-input" id="comp-lost" type="number" min="0" step="1" value="5">
+ </div>
+ </div>
+ </div>
+
+ {%- comment -%} TWT COLUMN {%- endcomment -%}
+ <div class="tco-col">
+ <div class="tco-col-header tco-col-header--twt">
+ <span class="tco-col-title tco-col-title--twt">TWT Audio Product</span>
+ <span class="tco-msrp-tag">MSRP: <strong id="twt-msrp-display">—</strong></span>
+ </div>
+ <div class="tco-col-body">
+
+ <div class="tco-model-row">
+ <div class="tco-model-row-left">
+ <label class="tco-label" for="twt-model">Select Model</label>
+ <select class="tco-select" id="twt-model">
+ {% assign tco_products = section.settings.products %}
+ {% for product in tco_products %}
+ {%- assign h = product.handle | downcase -%}
+ {%- if h contains 'tww-50' or h contains 'tww50' or h contains 'tww-55' or h contains 'tww55' or h contains 'lite' -%}
+ {%- assign w_years = 1 -%}
+ {%- else -%}
+ {%- assign w_years = 2 -%}
+ {%- endif -%}
+ <option
+ value="{{ product.handle }}"
+ data-msrp="{{ product.price | divided_by: 100.0 }}"
+ data-warranty="{{ w_years }}"
+ data-image="{{ product.featured_image | img_url: '300x300' }}"
+ data-title="{{ product.title | escape }}"
+ >{{ product.title }}</option>
+ {% else %}
+ <option value="tw50" data-msrp="11.99" data-warranty="1" data-image="" data-title="LITE Headphones (TW50)">LITE Headphones (TW50)</option>
+ <option value="tw100" data-msrp="17.99" data-warranty="2" data-image="" data-title="ERGO Headphones (TW100)">ERGO Headphones (TW100)</option>
+ <option value="tw200" data-msrp="22.99" data-warranty="2" data-image="" data-title="DURO Headphones (TW200)">DURO Headphones (TW200)</option>
+ <option value="tw300" data-msrp="27.99" data-warranty="2" data-image="" data-title="REVO Headphones (TW300)">REVO Headphones (TW300)</option>
+ <option value="tw55" data-msrp="13.99" data-warranty="1" data-image="" data-title="LITE Headset (TW55)">LITE Headset (TW55)</option>
+ <option value="tw110" data-msrp="20.99" data-warranty="2" data-image="" data-title="ERGO Headset (TW110)">ERGO Headset (TW110)</option>
+ <option value="tw210" data-msrp="24.99" data-warranty="2" data-image="" data-title="DURO Headset (TW210)">DURO Headset (TW210)</option>
+ <option value="tw310" data-msrp="34.99" data-warranty="2" data-image="" data-title="REVO Headset (TW310)">REVO Headset (TW310)</option>
+ {% endfor %}
+ </select>
+ <div class="tco-warranty-tag">
+ Warranty: <strong id="twt-warranty-display">—</strong>
+ <span class="sep">|</span>
+ Lifespan: <strong>3.7 yrs</strong>
+ </div>
+ </div>
+ <div class="tco-model-img">
+ <img id="twt-model-img" src="" alt="Selected TWT Audio model" style="display:none">
+ <div class="tco-img-placeholder" id="twt-img-placeholder">No image</div>
+ </div>
+ </div>
+
+ <div class="tco-field">
+ <label class="tco-label">Number of Units</label>
+ <input class="tco-input tco-input--readonly" id="twt-units" type="text" readonly>
+ <div class="tco-note">Matches competitor entry</div>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label" for="twt-cpu">Cost Per Unit — Reseller Pricing ($)</label>
+ <input class="tco-input tco-input--highlight" id="twt-cpu" type="number" min="0" step="0.01" value="13.75">
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Expected Lifespan (Years)</label>
+ <input class="tco-input tco-input--readonly" type="text" value="3.7" readonly>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Actual Warranty Term (Years)</label>
+ <input class="tco-input tco-input--readonly" id="twt-warranty-input" type="text" readonly>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Outside Warranty Replacements (Units/Year)</label>
+ <input class="tco-input tco-input--readonly" id="twt-oow" type="text" readonly>
+ <div class="tco-note">Auto-copied from competitor</div>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Shipping Cost (CONUS, Per Year)</label>
+ <input class="tco-input tco-input--readonly" type="text" value="$0.00" readonly>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Cost to Sanitize / Clean (Per Year)</label>
+ <input class="tco-input tco-input--readonly" id="twt-sanitize" type="text" readonly>
+ <div class="tco-note">Auto-copied from competitor</div>
+ </div>
+ <div class="tco-field">
+ <label class="tco-label">Lost or Stolen Units (Per Year)</label>
+ <input class="tco-input tco-input--readonly" id="twt-lost" type="text" readonly>
+ <div class="tco-note">Auto-copied from competitor</div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {%- comment -%} ── CALCULATE BUTTON ── {%- endcomment -%}
+ <div class="tco-calc-btn-wrap">
+ <button class="tco-calc-btn" id="tco-open-modal">Calculate My Savings →</button>
+ </div>
+
+ {%- comment -%} ── RESULTS (hidden until Klaviyo form submitted) ── {%- endcomment -%}
+ <div class="tco-results" id="tco-results">
+ <div class="tco-divider"></div>
+
+ <div class="tco-results-header">
+ <h3>Your 3-Year Cost Comparison</h3>
+ <p>Based on the inputs provided above</p>
+ </div>
+
+ <div class="tco-results-grid">
+ <div class="tco-result-card tco-result-card--comp">
+ <div class="tco-result-label">Competitor TCO</div>
+ <div class="tco-result-value" id="res-comp-tco">—</div>
+ <div class="tco-result-sub">3-year total</div>
+ </div>
+ <div class="tco-result-card tco-result-card--twt">
+ <div class="tco-result-label">TWT Audio TCO</div>
+ <div class="tco-result-value" id="res-twt-tco">—</div>
+ <div class="tco-result-sub">3-year total</div>
+ </div>
+ <div class="tco-result-card tco-result-card--save">
+ <div class="tco-result-label">Your Savings</div>
+ <div class="tco-result-value" id="res-savings">—</div>
+ <div class="tco-result-sub">by switching to TWT</div>
+ </div>
+ <div class="tco-result-card tco-result-card--roi">
+ <div class="tco-result-label">3-Year ROI</div>
+ <div class="tco-result-value" id="res-roi">—</div>
+ <div class="tco-result-sub">return on investment</div>
+ </div>
+ </div>
+
+ <div class="tco-breakdown">
+ <div class="tco-breakdown-title">Line-by-Line Cost Breakdown</div>
+ <table>
+ <thead>
+ <tr>
+ <th>Cost Item</th>
+ <th>Competitor</th>
+ <th>TWT Audio</th>
+ <th>Savings</th>
+ </tr>
+ </thead>
+ <tbody id="tco-breakdown-tbody"></tbody>
+ </table>
+ </div>
+ </div>
+
+ </div>
+</div>
+
+{%- comment -%} ── KLAVIYO FORM MODAL ── {%- endcomment -%}
+<div class="tco-modal-overlay" id="tco-modal-overlay">
+ <div class="tco-modal">
+ <div class="tco-modal-accent"></div>
+ <button class="tco-modal-close" id="tco-modal-close" aria-label="Close">&#x2715;</button>
+ <p class="tco-modal-heading">Almost there!</p>
+ <p class="tco-modal-sub">Enter your details below to unlock your savings results. We'll add you to our list so we can follow up with any questions.</p>
+
+ {%- comment -%}
+ Your Klaviyo form renders inside this div.
+ Set your Form ID in Theme Editor → TCO Calculator → "Klaviyo Form ID".
+ Renders as: <div class="klaviyo-form-ABC123"></div>
+ {%- endcomment -%}
+ <div id="tco-klaviyo-form-wrap">
+ <div class="klaviyo-form-{{ section.settings.klaviyo_form_id | default: 'REPLACE_WITH_YOUR_FORM_ID' }}"></div>
+ </div>
+ </div>
+</div>
+
+{% comment %} <script>
+(function () {
+ 'use strict';
+
+ // ── Helpers ──────────────────────────────────────────────
+ function fmt(n) {
+ return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+ }
+ function fmtPct(n) { return n.toFixed(1) + '%'; }
+ function val(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+ // ── TCO calculation ──────────────────────────────────────
+ // In-warranty years → OOW replacement cost = $0
+ // Out-of-warranty → OOW replacement cost = oow × cpu per year
+ function calcTCO(units, cpu, lifespan, warranty, oow, shipping, sanitize, lost) {
+ var total = units * cpu;
+ var years = Math.ceil(lifespan);
+ for (var y = 1; y <= years; y++) {
+ var oowCost = (y <= warranty) ? 0 : oow * cpu;
+ var lostCost = lost * cpu;
+ total += oowCost + lostCost + shipping + (units * sanitize);
+ }
+ return total;
+ }
+
+ function getLineItems(units, cpu, lifespan, warranty, oow, shipping, sanitize, lost) {
+ var yrs = Math.ceil(lifespan);
+ var oowTotal = 0;
+ for (var y = 1; y <= yrs; y++) { if (y > warranty) oowTotal += oow * cpu; }
+ return [
+ { label: 'Initial unit purchase', v: units * cpu },
+ { label: 'Shipping (over lifespan)', v: shipping * yrs },
+ { label: 'Sanitization (over lifespan)', v: units * sanitize * yrs },
+ { label: 'Lost / stolen replacements', v: lost * cpu * yrs },
+ { label: 'Out-of-warranty replacements', v: oowTotal },
+ ];
+ }
+
+ // ── Model selector sync ───────────────────────────────────
+ var modelSelect = document.getElementById('twt-model');
+ var msrpDisplay = document.getElementById('twt-msrp-display');
+ var warrantyDisp = document.getElementById('twt-warranty-display');
+ var warrantyInput = document.getElementById('twt-warranty-input');
+ var modelImg = document.getElementById('twt-model-img');
+ var imgPlaceholder = document.getElementById('twt-img-placeholder');
+
+ function syncModel() {
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var msrp = parseFloat(opt.getAttribute('data-msrp')) || 0;
+ var warranty = opt.getAttribute('data-warranty') || '2';
+ var image = opt.getAttribute('data-image') || '';
+
+ msrpDisplay.textContent = '$' + msrp.toFixed(2);
+ warrantyDisp.textContent = warranty + ' year' + (warranty == '1' ? '' : 's');
+ warrantyInput.value = warranty + ' year' + (warranty == '1' ? '' : 's');
+
+ if (image) {
+ modelImg.src = image;
+ modelImg.style.display = 'block';
+ imgPlaceholder.style.display = 'none';
+ } else {
+ modelImg.style.display = 'none';
+ imgPlaceholder.style.display = 'block';
+ }
+ }
+ modelSelect.addEventListener('change', syncModel);
+ syncModel();
+
+ // ── Mirror competitor → TWT readonly fields ───────────────
+ var mirrors = [
+ ['comp-units', 'twt-units'],
+ ['comp-oow', 'twt-oow'],
+ ['comp-sanitize', 'twt-sanitize'],
+ ['comp-lost', 'twt-lost'],
+ ];
+ function syncMirrors() {
+ mirrors.forEach(function (p) {
+ var s = document.getElementById(p[0]);
+ var d = document.getElementById(p[1]);
+ if (s && d) d.value = s.value;
+ });
+ }
+ mirrors.forEach(function (p) {
+ var el = document.getElementById(p[0]);
+ if (el) el.addEventListener('input', syncMirrors);
+ });
+ syncMirrors();
+
+ // ── Stash pending results until Klaviyo form submits ──────
+ var _pending = null;
+
+ function computeResults() {
+ var compUnits = val('comp-units');
+ var compCpu = val('comp-cpu');
+ var compLifespan = val('comp-lifespan');
+ var compWarranty = val('comp-warranty');
+ var compOow = val('comp-oow');
+ var compShipping = val('comp-shipping');
+ var compSanitize = val('comp-sanitize');
+ var compLost = val('comp-lost');
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var twtWarranty = parseInt(opt.getAttribute('data-warranty')) || 2;
+ var twtCpu = val('twt-cpu');
+
+ var compTCO = calcTCO(compUnits, compCpu, compLifespan, compWarranty, compOow, compShipping, compSanitize, compLost);
+ var twtTCO = calcTCO(compUnits, twtCpu, 3.7, twtWarranty, compOow, 0, compSanitize, compLost);
+ var savings = compTCO - twtTCO;
+ var roi = twtTCO > 0 ? (savings / twtTCO) * 100 : 0;
+
+ return {
+ compTCO: compTCO,
+ twtTCO: twtTCO,
+ savings: savings,
+ roi: roi,
+ compLines: getLineItems(compUnits, compCpu, compLifespan, compWarranty, compOow, compShipping, compSanitize, compLost),
+ twtLines: getLineItems(compUnits, twtCpu, 3.7, twtWarranty, compOow, 0, compSanitize, compLost),
+ };
+ }
+
+ function renderResults(r) {
+ document.getElementById('res-comp-tco').textContent = fmt(r.compTCO);
+ document.getElementById('res-twt-tco').textContent = fmt(r.twtTCO);
+ document.getElementById('res-savings').textContent = fmt(r.savings);
+ document.getElementById('res-roi').textContent = fmtPct(r.roi);
+
+ var tbody = document.getElementById('tco-breakdown-tbody');
+ tbody.innerHTML = '';
+ r.compLines.forEach(function (item, i) {
+ var save = item.v - r.twtLines[i].v;
+ var tr = document.createElement('tr');
+ tr.innerHTML =
+ '<td>' + item.label + '</td>' +
+ '<td class="td-comp">' + fmt(item.v) + '</td>' +
+ '<td class="td-twt">' + fmt(r.twtLines[i].v) + '</td>' +
+ '<td class="td-save">' + (save >= 0 ? fmt(save) : '&minus;' + fmt(Math.abs(save))) + '</td>';
+ tbody.appendChild(tr);
+ });
+
+ var totalRow = document.createElement('tr');
+ totalRow.className = 'total-row';
+ totalRow.innerHTML =
+ '<td>3-Year Total</td>' +
+ '<td class="td-comp">' + fmt(r.compTCO) + '</td>' +
+ '<td class="td-twt">' + fmt(r.twtTCO) + '</td>' +
+ '<td class="td-save">' + fmt(r.savings) + '</td>';
+ tbody.appendChild(totalRow);
+
+ var resultsEl = document.getElementById('tco-results');
+ resultsEl.classList.add('active');
+ setTimeout(function () {
+ resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+ }, 200);
+ }
+
+ // ── Modal open / close ────────────────────────────────────
+ var overlay = document.getElementById('tco-modal-overlay');
+ var openBtn = document.getElementById('tco-open-modal');
+ var closeBtn = document.getElementById('tco-modal-close');
+
+ openBtn.addEventListener('click', function () {
+ _pending = computeResults();
+ overlay.classList.add('active');
+ });
+ closeBtn.addEventListener('click', function () { overlay.classList.remove('active'); });
+ overlay.addEventListener('click', function (e) {
+ if (e.target === overlay) overlay.classList.remove('active');
+ });
+
+ // ── Push results as Klaviyo profile properties ───────────
+ // Called immediately after form submit so the Flow email
+ // can reference real numbers via {{ person.tco_savings }} etc.
+ //
+ // Profile properties set on the customer:
+ // tco_model — selected TWT model name
+ // tco_competitor_tco — e.g. "$93,750.00"
+ // tco_twt_tco — e.g. "$68,425.00"
+ // tco_savings — e.g. "$25,325.00"
+ // tco_roi — e.g. "37.0%"
+ // tco_units — e.g. 5000
+ // tco_comp_cpu — e.g. "$18.75"
+ // tco_twt_cpu — e.g. "$13.75"
+ // tco_comp_warranty — e.g. "1 year"
+ // tco_twt_warranty — e.g. "2 years"
+ // tco_submitted_at — ISO timestamp
+ //
+ // Use in Klaviyo Flow email template:
+ // You saved {{ person.tco_savings }} over 3 years with {{ person.tco_model }}!
+ // Competitor TCO: {{ person.tco_competitor_tco }}
+ // TWT Audio TCO: {{ person.tco_twt_tco }}
+ // ROI: {{ person.tco_roi }}
+
+ function pushToKlaviyo(r) {
+ if (!window._learnq) {
+ console.warn('TCO: Klaviyo (_learnq) not available.');
+ return;
+ }
+
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var modelName = opt.getAttribute('data-title') || opt.value;
+ var twtWarranty = parseInt(opt.getAttribute('data-warranty')) || 2;
+ var compWarranty = val('comp-warranty');
+
+ // _learnq.push identify updates the already-identified profile
+ // (Klaviyo identifies them from the form submission just before this runs)
+ window._learnq.push(['identify', {
+ // Results
+ 'tco_model': modelName,
+ 'tco_competitor_tco': fmt(r.compTCO),
+ 'tco_twt_tco': fmt(r.twtTCO),
+ 'tco_savings': fmt(r.savings),
+ 'tco_roi': fmtPct(r.roi),
+ // Key inputs — useful for sales follow-up context
+ 'tco_units': val('comp-units'),
+ 'tco_comp_cpu': fmt(val('comp-cpu')),
+ 'tco_twt_cpu': fmt(val('twt-cpu')),
+ 'tco_comp_warranty': compWarranty + ' year' + (compWarranty == 1 ? '' : 's'),
+ 'tco_twt_warranty': twtWarranty + ' year' + (twtWarranty == 1 ? '' : 's'),
+ 'tco_submitted_at': new Date().toISOString(),
+ }]);
+ }
+
+ // ── Klaviyo form submission listener ─────────────────────
+ // Klaviyo fires window event 'klaviyoForms' with detail.type === 'submit'
+ // on successful form submission. We:
+ // 1. Push TCO results as profile properties (for the Flow email)
+ // 2. Close the modal
+ // 3. Render results on the page
+ window.addEventListener('klaviyoForms', function (e) {
+ if (e.detail && e.detail.type === 'submit') {
+ if (_pending) {
+ pushToKlaviyo(_pending); // ← push results to Klaviyo profile first
+ overlay.classList.remove('active');
+ renderResults(_pending);
+ _pending = null;
+ } else {
+ overlay.classList.remove('active');
+ }
+ }
+ });
+
+})();
+</script> {% endcomment %}
+<script>
+(function () {
+ 'use strict';
+
+ function fmt(n) {
+ return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+ }
+
+ function fmtPct(n) { 
+ return n.toFixed(1) + '%'; 
+ }
+
+ function val(id) { 
+ return parseFloat(document.getElementById(id).value) || 0; 
+ }
+
+ function calcTCO(units, cpu, lifespan, warranty, oow, shipping, sanitize, lost) {
+ var total = units * cpu;
+ var years = Math.ceil(lifespan);
+
+ for (var y = 1; y <= years; y++) {
+ var oowCost = (y <= warranty) ? 0 : oow * cpu;
+ var lostCost = lost * cpu;
+ total += oowCost + lostCost + shipping + (units * sanitize);
+ }
+
+ return total;
+ }
+
+ function getLineItems(units, cpu, lifespan, warranty, oow, shipping, sanitize, lost) {
+ var yrs = Math.ceil(lifespan);
+ var oowTotal = 0;
+
+ for (var y = 1; y <= yrs; y++) {
+ if (y > warranty) oowTotal += oow * cpu;
+ }
+
+ return [
+ { label: 'Initial unit purchase', v: units * cpu },
+ { label: 'Shipping (over lifespan)', v: shipping * yrs },
+ { label: 'Sanitization (over lifespan)', v: units * sanitize * yrs },
+ { label: 'Lost / stolen replacements', v: lost * cpu * yrs },
+ { label: 'Out-of-warranty replacements', v: oowTotal }
+ ];
+ }
+
+ var modelSelect = document.getElementById('twt-model');
+ var msrpDisplay = document.getElementById('twt-msrp-display');
+ var warrantyDisp = document.getElementById('twt-warranty-display');
+ var warrantyInput = document.getElementById('twt-warranty-input');
+ var modelImg = document.getElementById('twt-model-img');
+ var imgPlaceholder = document.getElementById('twt-img-placeholder');
+
+ function syncModel() {
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var msrp = parseFloat(opt.getAttribute('data-msrp')) || 0;
+ var warranty = opt.getAttribute('data-warranty') || '2';
+ var image = opt.getAttribute('data-image') || '';
+
+ msrpDisplay.textContent = '$' + msrp.toFixed(2);
+ warrantyDisp.textContent = warranty + ' year' + (warranty == '1' ? '' : 's');
+ warrantyInput.value = warranty + ' year' + (warranty == '1' ? '' : 's');
+
+ if (image) {
+ modelImg.src = image;
+ modelImg.style.display = 'block';
+ imgPlaceholder.style.display = 'none';
+ } else {
+ modelImg.style.display = 'none';
+ imgPlaceholder.style.display = 'block';
+ }
+ }
+
+ modelSelect.addEventListener('change', syncModel);
+ syncModel();
+
+ var mirrors = [
+ ['comp-units','twt-units'],
+ ['comp-oow','twt-oow'],
+ ['comp-sanitize','twt-sanitize'],
+ ['comp-lost','twt-lost']
+ ];
+
+ function syncMirrors() {
+ mirrors.forEach(function(p){
+ var s = document.getElementById(p[0]);
+ var d = document.getElementById(p[1]);
+ if (s && d) d.value = s.value;
+ });
+ }
+
+ mirrors.forEach(function(p){
+ var el = document.getElementById(p[0]);
+ if (el) el.addEventListener('input', syncMirrors);
+ });
+
+ syncMirrors();
+
+ var _pending = null;
+
+ function computeResults() {
+ var compUnits = val('comp-units');
+ var compCpu = val('comp-cpu');
+ var compLifespan = val('comp-lifespan');
+ var compWarranty = val('comp-warranty');
+ var compOow = val('comp-oow');
+ var compShipping = val('comp-shipping');
+ var compSanitize = val('comp-sanitize');
+ var compLost = val('comp-lost');
+
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var twtWarranty = parseInt(opt.getAttribute('data-warranty')) || 2;
+ var twtCpu = val('twt-cpu');
+
+ var compTCO = calcTCO(compUnits, compCpu, compLifespan, compWarranty, compOow, compShipping, compSanitize, compLost);
+ var twtTCO = calcTCO(compUnits, twtCpu, 3.7, twtWarranty, compOow, 0, compSanitize, compLost);
+
+ var savings = compTCO - twtTCO;
+ var roi = twtTCO > 0 ? (savings / twtTCO) * 100 : 0;
+
+ return {
+ compTCO: compTCO,
+ twtTCO: twtTCO,
+ savings: savings,
+ roi: roi,
+ compLines: getLineItems(compUnits, compCpu, compLifespan, compWarranty, compOow, compShipping, compSanitize, compLost),
+ twtLines: getLineItems(compUnits, twtCpu, 3.7, twtWarranty, compOow, 0, compSanitize, compLost)
+ };
+ }
+
+ function renderResults(r) {
+ document.getElementById('res-comp-tco').textContent = fmt(r.compTCO);
+ document.getElementById('res-twt-tco').textContent = fmt(r.twtTCO);
+ document.getElementById('res-savings').textContent = fmt(r.savings);
+ document.getElementById('res-roi').textContent = fmtPct(r.roi);
+
+ var tbody = document.getElementById('tco-breakdown-tbody');
+ tbody.innerHTML = '';
+
+ r.compLines.forEach(function(item,i){
+ var save = item.v - r.twtLines[i].v;
+
+ var tr = document.createElement('tr');
+ tr.innerHTML =
+ '<td>'+item.label+'</td>'+
+ '<td class="td-comp">'+fmt(item.v)+'</td>'+
+ '<td class="td-twt">'+fmt(r.twtLines[i].v)+'</td>'+
+ '<td class="td-save">'+(save >= 0 ? fmt(save) : '&minus;' + fmt(Math.abs(save)))+'</td>';
+
+ tbody.appendChild(tr);
+ });
+
+ var totalRow = document.createElement('tr');
+ totalRow.className = 'total-row';
+ totalRow.innerHTML =
+ '<td>3-Year Total</td>'+
+ '<td class="td-comp">'+fmt(r.compTCO)+'</td>'+
+ '<td class="td-twt">'+fmt(r.twtTCO)+'</td>'+
+ '<td class="td-save">'+fmt(r.savings)+'</td>';
+
+ tbody.appendChild(totalRow);
+
+ var resultsEl = document.getElementById('tco-results');
+ resultsEl.classList.add('active');
+
+ setTimeout(function(){
+ resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
+ },200);
+ }
+
+ var overlay = document.getElementById('tco-modal-overlay');
+ var openBtn = document.getElementById('tco-open-modal');
+ var closeBtn = document.getElementById('tco-modal-close');
+
+ openBtn.addEventListener('click', function(){
+ _pending = computeResults();
+ overlay.classList.add('active');
+ });
+
+ closeBtn.addEventListener('click', function(){
+ overlay.classList.remove('active');
+ });
+
+ overlay.addEventListener('click', function(e){
+ if (e.target === overlay) overlay.classList.remove('active');
+ });
+
+ function pushToKlaviyo(r){
+ if (!window._learnq) return;
+
+ var opt = modelSelect.options[modelSelect.selectedIndex];
+ var modelName = opt.getAttribute('data-title') || opt.value;
+
+ window._learnq.push([
+ 'track',
+ 'TCO Calculator Submitted',
+ {
+ name:'TCO Calculator',
+ model:modelName,
+ compTCO:fmt(r.compTCO),
+ twtTCO:fmt(r.twtTCO),
+ totalSavings:fmt(r.savings),
+ roiPercent:fmtPct(r.roi),
+ twtCpu:fmt(val('twt-cpu')),
+ compCpu:fmt(val('comp-cpu'))
+ }
+ ]);
+ }
+
+ window.addEventListener('klaviyoForms', function(e){
+ if (e.detail && e.detail.type === 'submit'){
+ if (_pending){
+ pushToKlaviyo(_pending);
+ overlay.classList.remove('active');
+ renderResults(_pending);
+ _pending = null;
+ } else {
+ overlay.classList.remove('active');
+ }
+ }
+ });
+
+})();
+</script>
+
+{% schema %}
+{
+ "name": "TCO Calculator",
+ "settings": [
+ {
+ "type": "text",
+ "id": "title",
+ "label": "Section Title",
+ "default": "3-Year Total Cost of Ownership Calculator"
+ },
+ {
+ "type": "text",
+ "id": "subtitle",
+ "label": "Subtitle",
+ "default": "See how TWT Audio compares against your current product over a 3-year period. Enter your details below to calculate your savings."
+ },
+ {
+ "type": "text",
+ "id": "klaviyo_form_id",
+ "label": "Klaviyo Form ID",
+ "info": "Paste your Klaviyo form ID here, e.g. ABC123. Find it in Klaviyo → Forms → your form → Embed code (class name is 'klaviyo-form-ABC123')."
+ },
+ {
+ "type": "product_list",
+ "id": "products",
+ "label": "TWT Audio Products",
+ "info": "Select TWT Audio models to display in the dropdown. Products with 'lite', 'TWW-50' or 'TWW-55' in their handle will show 1-year warranty; all others show 2 years."
+ }
+ ],
+ "presets": [
+ {
+ "name": "TCO Calculator"
+ }
+ ]
+}
+{% endschema %}
