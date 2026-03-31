@@ -15,9 +15,20 @@
         "padding_top": 28,
         "padding_bottom": 28
       }
+    },
+    "tco_calculator_aJhGqY": {
+      "type": "tco-calculator",
+      "name": "TCO Calculator",
+      "settings": {
+        "title": "3-Year Total Cost of Ownership Calculator",
+        "subtitle": "See how TWT Audio compares against your current product over a 3-year period. Enter your details below to calculate your savings.",
+        "klaviyo_form_id": "",
+        "products": []
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "tco_calculator_aJhGqY"
   ]
 }
