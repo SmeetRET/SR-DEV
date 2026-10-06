@@ -96,11 +96,27 @@
       "settings": {
         "include_margins": true
       }
+    },
+    "179128818601ab0785": {
+      "type": "apps",
+      "blocks": {
+        "instasync_instagram_feed_instasync_feed_dfdLNJ": {
+          "type": "shopify://apps/instasync-instagram-feed/blocks/instasync_feed/98ab4ac6-e751-4136-9aa2-fada4b7a70e8",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "instasync_instagram_feed_instasync_feed_dfdLNJ"
+      ],
+      "settings": {
+        "include_margins": true
+      }
     }
   },
   "order": [
     "image_banner",
     "featured_collection",
-    "17585400267a45aab9"
+    "17585400267a45aab9",
+    "179128818601ab0785"
   ]
 }
