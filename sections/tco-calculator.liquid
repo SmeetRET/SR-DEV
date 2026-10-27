@@ -407,6 +407,9 @@
  <select class="tco-select" id="twt-model">
  {% assign tco_products = section.settings.products %}
  {% for product in tco_products %}
+ {%- comment %}<locksmith:4ab7>{% endcomment -%}
+   {%- capture var %}{% render 'locksmith-variables', scope: 'subject', subject: product, variable: 'transparent' %}{% endcapture %}{% if var == "true" %}{% else %}{% continue %}{% endif -%}
+ {%- comment %}</locksmith:4ab7>{% endcomment -%}
  {%- assign h = product.handle | downcase -%}
  {%- if h contains 'tww-50' or h contains 'tww50' or h contains 'tww-55' or h contains 'tww55' or h contains 'lite' -%}
  {%- assign w_years = 1 -%}
