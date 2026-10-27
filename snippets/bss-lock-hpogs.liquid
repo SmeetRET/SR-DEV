@@ -1,0 +1,21 @@
+
+{% unless bss_lock_check contains 'Liquid error' %}
+  {% if bss_lock_check contains 'true' and product.title != blank %}
+    {%- assign hp_url = shop.url | append: product.url -%}
+    {%- assign hp_sku = product.selected_or_first_available_variant.sku -%}
+    {%- if product.featured_image -%}
+      {%- assign hp_image = product.featured_image | image_url: width: 1920 -%}
+      {%- assign hp_image_head = hp_image | slice: 0, 2 -%}
+      {%- if hp_image_head == '//' -%}{%- assign hp_image = hp_image | prepend: 'https:' -%}{%- endif -%}
+    {%- endif -%}
+{"@context": "http://schema.org/", "@type": "Product", "name": {{ product.title | json }}, "description": {{ product.description | strip_html | json }}, "url": {{ hp_url | json }}
+    {%- if product.featured_image -%}, "image": {{ hp_image | json }}{%- endif -%}
+    {%- if product.vendor != blank -%}, "brand": {"@type": "Brand", "name": {{ product.vendor | json }}}{%- endif -%}
+    {%- if hp_sku != blank -%}, "sku": {{ hp_sku | json }}{%- endif -%}
+}
+  {% else %}
+    {{ product_schema }}
+  {% endif %}
+{%- else -%}
+  {{ product_schema }}
+{%- endunless -%}
