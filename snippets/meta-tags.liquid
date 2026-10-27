@@ -43,8 +43,8 @@
 
 {%- if request.page_type == 'product' -%}
   {%- comment %}<locksmith:ea83>{% endcomment -%}
-    {%- capture var %}{% render 'locksmith-variables', variable: 'access_granted' %}{% endcapture %}{% if var == 'true' %}<meta property="og:price:amount" content="{{ product.price | money_without_currency | strip_html }}">{% endif -%}
-    {%- comment %}original: <meta property="og:price:amount" content="{{ product.price | money_without_currency | strip_html }}">{%- endcomment %}
+    {%- capture var %}{% render 'locksmith-variables', variable: 'access_granted' %}{% endcapture %}{% if var == 'true' %}<meta property="og:price:amount" content="{% comment %}Start Bsscommerce HPOGS{% endcomment %}{% capture bss_lock_check %}{% render 'bss-lock-condition', scope: 'subject', subject: product, subject_parent: product, variable: 'hpogg' %}{% endcapture %}{% unless bss_lock_check contains "Liquid error" %}{% if bss_lock_check contains "true" %}{% else %}{{ product.price | money_without_currency | strip_html }}{% endif %}{% endunless %}{% comment %}End Bsscommerce HPOGS{% endcomment %}">{% endif -%}
+    {%- comment %}original: <meta property="og:price:amount" content="{% comment %}Start Bsscommerce HPOGS{% endcomment %}{% capture bss_lock_check %}{% render 'bss-lock-condition', scope: 'subject', subject: product, subject_parent: product, variable: 'hpogg' %}{% endcapture %}{% unless bss_lock_check contains "Liquid error" %}{% if bss_lock_check contains "true" %}{% else %}{{ product.price | money_without_currency | strip_html }}{% endif %}{% endunless %}{% comment %}End Bsscommerce HPOGS{% endcomment %}">{%- endcomment %}
   {%- comment %}</locksmith:ea83>{% endcomment -%}
   {%- comment %}<locksmith:0c57>{% endcomment -%}
     {%- capture var %}{% render 'locksmith-variables', variable: 'access_granted' %}{% endcapture %}{% if var == 'true' %}<meta property="og:price:currency" content="{{ cart.currency.iso_code }}">{% endif -%}
