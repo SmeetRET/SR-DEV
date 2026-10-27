@@ -177,6 +177,11 @@
         "type": "shopify://apps/recharge-subscriptions/blocks/storefront-experiences/371eed76-0b44-4869-9813-730372ea378e",
         "disabled": false,
         "settings": {}
+      },
+      "14043481873128526568": {
+        "type": "shopify://apps/bss-b2b-lock/blocks/config-header/2f6e9bdf-2dd6-42c6-8d67-58be57506f80",
+        "disabled": false,
+        "settings": {}
       }
     },
     "color_schemes": {
